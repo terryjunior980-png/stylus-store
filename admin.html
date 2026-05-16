@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STYLUS Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --black: #000;
+      --near-black: #0a0a0a;
+      --dark: #111;
+      --border: #222;
+      --white: #fff;
+      --grey: #888;
+      --accent: #c9a84c;
+      --red: #ff4444;
+      --green: #25d366;
+      --font-mono: 'Space Mono', monospace;
+      --font-display: 'Cormorant Garamond', serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--black); color: var(--white); font-family: var(--font-mono); min-height: 100vh; }
+
+    /* LOGIN */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+    }
+    .login-box {
+      background: var(--near-black);
+      border: 1px solid var(--border);
+      padding: 3rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-logo {
+      font-family: var(--font-mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+    .login-sub {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--grey);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+    .login-input {
+      width: 100%;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      color: var(--white);
+      padding: 0.85rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      outline: none;
+      text-align: center;
+      letter-spacing: 0.1em;
+    }
+    .login-input:focus { border-color: var(--accent); }
+    .login-btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: var(--black);
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.85; }
+    .login-error {
+      color: var(--red);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    /* DASHBOARD */
+    .dashboard { display: none; }
+
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: var(--near-black);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      z-index: 100;
+    }
+    .topbar-logo {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+    }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .topbar-time {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--grey);
+    }
+    .logout-btn {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--grey);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .logout-btn:hover { color: var(--white); border-color: var(--white); }
+
+    .main {
+      padding: 80px 2rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* STATS */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+    .stat-card {
+      background: var(--near-black);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+    .stat-label {
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      color: var(--grey);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--accent);
+      margin-bottom: 0.25rem;
+    }
+    .stat-sub {
+      font-size: 0.6rem;
+      color: var(--grey);
+      letter-spacing: 0.1em;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      color: var(--grey);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ORDERS TABLE */
+    .orders-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .orders-count {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--grey);
+    }
+    .clear-orders-btn {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      padding: 0.35rem 0.75rem;
+      background: none;
+      border: 1px solid var(--red);
+      color: var(--red);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .clear-orders-btn:hover { background: var(--red); color: var(--white); }
+
+    .orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+    }
+    .orders-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--grey);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .orders-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .orders-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .order-ref {
+      font-size: 0.65rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+    .order-customer { font-size: 0.8rem; margin-bottom: 0.2rem; }
+    .order-contact { font-size: 0.65rem; color: var(--grey); }
+    .order-items { font-size: 0.7rem; color: var(--grey); line-height: 1.6; }
+    .order-amount { font-size: 0.9rem; color: var(--accent); font-weight: 700; }
+    .order-date { font-size: 0.6rem; color: var(--grey); }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .status-paid { background: rgba(37,211,102,0.15); color: var(--green); }
+    .status-pending { background: rgba(201,168,76,0.15); color: var(--accent); }
+
+    .no-orders {
+      text-align: center;
+      padding: 4rem;
+      color: var(--grey);
+      font-size: 0.8rem;
+    }
+
+    /* PRODUCTS TAB */
+    .products-admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    .product-admin-card {
+      background: var(--near-black);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .product-admin-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+    }
+    .product-admin-info { padding: 1rem; }
+    .product-admin-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .product-admin-price {
+      color: var(--accent);
+      font-size: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .product-admin-stock {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--grey);
+    }
+
+    /* OVERVIEW TAB */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .overview-card {
+      background: var(--near-black);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+    .overview-card h3 {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--grey);
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .top-product {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+    }
+    .top-product:last-child { border-bottom: none; }
+    .top-product-rank {
+      font-size: 0.65rem;
+      color: var(--accent);
+      min-width: 20px;
+    }
+    .recent-order {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.7rem;
+    }
+    .recent-order:last-child { border-bottom: none; }
+    .recent-order-ref { color: var(--accent); font-size: 0.65rem; }
+    .recent-order-amount { color: var(--green); }
+
+    @media (max-width: 768px) {
+      .main { padding: 70px 1rem 1rem; }
+      .overview-grid { grid-template-columns: 1fr; }
+      .orders-table { font-size: 0.65rem; }
+      .orders-table th, .orders-table td { padding: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">STYLUS</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="password" class="login-input" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter') login()" />
+    <button class="login-btn" onclick="login()">Access Dashboard</button>
+    <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">STYLUS ADMIN</div>
+    <div class="topbar-right">
+      <div class="topbar-time" id="topbarTime"></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-title">Dashboard</div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-value" id="statOrders">0</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" id="statRevenue">₦0</div>
+        <div class="stat-sub">Confirmed payments</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Products</div>
+        <div class="stat-value" id="statProducts">0</div>
+        <div class="stat-sub">In catalogue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today's Orders</div>
+        <div class="stat-value" id="statToday">0</div>
+        <div class="stat-sub">Last 24 hours</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('orders')">Orders</button>
+      <button class="tab-btn" onclick="showTab('products')">Products</button>
+      <button class="tab-btn" onclick="showTab('overview')">Overview</button>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="tab-content active" id="tab-orders">
+      <div class="orders-header">
+        <div class="orders-count" id="ordersCount">0 orders</div>
+        <button class="clear-orders-btn" onclick="clearOrders()">Clear All Orders</button>
+      </div>
+      <div id="ordersContainer"></div>
+    </div>
+
+    <!-- PRODUCTS TAB -->
+    <div class="tab-content" id="tab-products">
+      <div class="products-admin-grid" id="productsAdminGrid"></div>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div class="tab-content" id="tab-overview">
+      <div class="overview-grid">
+        <div class="overview-card">
+          <h3>Top Products</h3>
+          <div id="topProducts"></div>
+        </div>
+        <div class="overview-card">
+          <h3>Recent Orders</h3>
+          <div id="recentOrders"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ADMIN_PASSWORD = 'Stylus@2025';
+  let orders = JSON.parse(localStorage.getItem('stylus_orders') || '[]');
+  let products = [];
+
+  // ── LOGIN ──────────────────────────────────────────
+  function login() {
+    const val = document.getElementById('passwordInput').value;
+    if (val === ADMIN_PASSWORD) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      sessionStorage.setItem('stylus_admin', '1');
+      initDashboard();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('stylus_admin');
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'none';
+    document.getElementById('passwordInput').value = '';
+  }
+
+  // Auto-login if session active
+  if (sessionStorage.getItem('stylus_admin')) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    initDashboard();
+  }
+
+  // ── CLOCK ──────────────────────────────────────────
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('topbarTime').textContent = now.toLocaleString('en-NG', {
+      weekday: 'short', day: 'numeric', month: 'short',
+      hour: '2-digit', minute: '2-digit'
+    });
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ── TABS ───────────────────────────────────────────
+  function showTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', ['orders','products','overview'][i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // ── INIT ───────────────────────────────────────────
+  async function initDashboard() {
+    await loadProducts();
+    renderStats();
+    renderOrders();
+    renderProducts();
+    renderOverview();
+  }
+
+  async function loadProducts() {
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      products = data.products || [];
+    } catch(e) { products = []; }
+  }
+
+  // ── STATS ──────────────────────────────────────────
+  function renderStats() {
+    const total = orders.length;
+    const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+    const today = orders.filter(o => {
+      const d = new Date(o.date);
+      const now = new Date();
+      return d.toDateString() === now.toDateString();
+    }).length;
+
+    document.getElementById('statOrders').textContent = total;
+    document.getElementById('statRevenue').textContent = '₦' + revenue.toLocaleString();
+    document.getElementById('statProducts').textContent = products.length;
+    document.getElementById('statToday').textContent = today;
+  }
+
+  // ── ORDERS ─────────────────────────────────────────
+  function renderOrders() {
+    const container = document.getElementById('ordersContainer');
+    document.getElementById('ordersCount').textContent = orders.length + ' order' + (orders.length !== 1 ? 's' : '');
+
+    if (!orders.length) {
+      container.innerHTML = '<div class="no-orders">No orders yet. Share your store link to start selling! 🔥</div>';
+      return;
+    }
+
+    const sorted = [...orders].reverse();
+    container.innerHTML = '<table class="orders-table"><thead><tr>' +
+      '<th>Reference</th><th>Customer</th><th>Items</th><th>Amount</th><th>Date</th><th>Status</th>' +
+      '</tr></thead><tbody>' +
+      sorted.map(o => `
+        <tr>
+          <td><div class="order-ref">${o.reference || 'N/A'}</div></td>
+          <td>
+            <div class="order-customer">${o.customer?.name || 'N/A'}</div>
+            <div class="order-contact">${o.customer?.email || ''}</div>
+            <div class="order-contact">${o.customer?.phone || ''}</div>
+            <div class="order-contact" style="margin-top:0.25rem">${o.address?.street || ''}, ${o.address?.city || ''}</div>
+          </td>
+          <td><div class="order-items">${(o.items || []).map(i => i.name + ' (' + i.size + ', ' + i.color + ') x' + i.quantity).join('<br>')}</div></td>
+          <td><div class="order-amount">₦${(o.total || 0).toLocaleString()}</div></td>
+          <td><div class="order-date">${o.date ? new Date(o.date).toLocaleString('en-NG') : 'N/A'}</div></td>
+          <td><span class="status-badge status-paid">PAID</span></td>
+        </tr>
+      `).join('') +
+      '</tbody></table>';
+  }
+
+  function clearOrders() {
+    if (confirm('Clear all order history? This cannot be undone.')) {
+      orders = [];
+      localStorage.setItem('stylus_orders', '[]');
+      renderStats();
+      renderOrders();
+      renderOverview();
+    }
+  }
+
+  // ── PRODUCTS ───────────────────────────────────────
+  function renderProducts() {
+    const grid = document.getElementById('productsAdminGrid');
+    grid.innerHTML = products.map(p => `
+      <div class="product-admin-card">
+        <img class="product-admin-img" src="${p.image}" alt="${p.name}" />
+        <div class="product-admin-info">
+          <div class="product-admin-name">${p.name}</div>
+          <div class="product-admin-price">₦${p.price.toLocaleString()}</div>
+          <div class="product-admin-stock">Stock: ${p.stock} units · ${p.category}</div>
+          <div class="product-admin-stock" style="margin-top:0.25rem">Sizes: ${p.sizes.join(', ')}</div>
+          <div class="product-admin-stock">Colors: ${p.colors.join(', ')}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── OVERVIEW ───────────────────────────────────────
+  function renderOverview() {
+    // Top products by sales
+    const productSales = {};
+    orders.forEach(o => {
+      (o.items || []).forEach(item => {
+        productSales[item.name] = (productSales[item.name] || 0) + item.quantity;
+      });
+    });
+    const sorted = Object.entries(productSales).sort((a,b) => b[1]-a[1]).slice(0,5);
+    document.getElementById('topProducts').innerHTML = sorted.length ?
+      sorted.map((p,i) => `
+        <div class="top-product">
+          <span class="top-product-rank">#${i+1}</span>
+          <span>${p[0]}</span>
+          <span style="margin-left:auto;color:var(--accent)">${p[1]} sold</span>
+        </div>
+      `).join('') :
+      '<p style="color:var(--grey);font-size:0.75rem">No sales data yet</p>';
+
+    // Recent orders
+    const recent = [...orders].reverse().slice(0,5);
+    document.getElementById('recentOrders').innerHTML = recent.length ?
+      recent.map(o => `
+        <div class="recent-order">
+          <div class="recent-order-ref">${o.reference}</div>
+          <div style="display:flex;justify-content:space-between;margin-top:0.2rem">
+            <span>${o.customer?.name || 'N/A'}</span>
+            <span class="recent-order-amount">₦${(o.total||0).toLocaleString()}</span>
+          </div>
+        </div>
+      `).join('') :
+      '<p style="color:var(--grey);font-size:0.75rem">No recent orders</p>';
+  }
+</script>
+</body>
+</html>
