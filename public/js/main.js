@@ -1,0 +1,314 @@
+'use strict';
+
+let cart = JSON.parse(localStorage.getItem('stylus_cart') || '[]');
+let config = {};
+let allProducts = [];
+let currentFilter = 'All';
+let currentSort = '';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initCursor();
+  initNav();
+  await loadConfig();
+  await loadProducts();
+  updateCartUI();
+  initCart();
+  initCheckout();
+  setWhatsAppLinks();
+});
+
+async function loadConfig() {
+  try {
+    const res = await fetch('/api/config');
+    config = await res.json();
+  } catch (e) { console.error('Config load failed:', e); }
+}
+
+function initCursor() {
+  const cursor = document.getElementById('cursor');
+  const follower = document.getElementById('cursorFollower');
+  if (!cursor || !follower) return;
+  let followerX = 0, followerY = 0, cursorX = 0, cursorY = 0;
+  document.addEventListener('mousemove', (e) => {
+    cursorX = e.clientX; cursorY = e.clientY;
+    cursor.style.left = cursorX + 'px'; cursor.style.top = cursorY + 'px';
+  });
+  document.querySelectorAll('a, button, .product-card, input, select').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+  (function animateFollower() {
+    followerX += (cursorX - followerX) * 0.12;
+    followerY += (cursorY - followerY) * 0.12;
+    follower.style.left = followerX + 'px'; follower.style.top = followerY + 'px';
+    requestAnimationFrame(animateFollower);
+  })();
+}
+
+function initNav() {
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 50));
+}
+
+async function loadProducts(filter = 'All', sort = '') {
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = '<div class="products-loading"><div class="loading-spinner"></div></div>';
+  try {
+    const params = new URLSearchParams();
+    if (filter !== 'All') params.set('category', filter);
+    if (sort) params.set('sort', sort);
+    const res = await fetch(`/api/products?${params}`);
+    const data = await res.json();
+    allProducts = data.products;
+    renderProducts(data.products);
+  } catch (e) {
+    grid.innerHTML = '<p style="color:var(--grey);text-align:center;padding:3rem">Failed to load products. Please refresh.</p>';
+  }
+}
+
+function renderProducts(products) {
+  const grid = document.getElementById('productsGrid');
+  if (!products.length) {
+    grid.innerHTML = '<p style="color:var(--grey);text-align:center;padding:3rem;grid-column:1/-1">No products found.</p>';
+    return;
+  }
+  grid.innerHTML = products.map((p, i) => `
+    <article class="product-card" style="animation-delay:${i * 0.07}s" onclick="openProductModal('${p.id}')">
+      <div class="product-card-img">
+        <img src="${p.image}" alt="${p.name}" loading="lazy" />
+        <div class="product-card-overlay">
+          <button class="overlay-btn" onclick="event.stopPropagation(); openProductModal('${p.id}')">Quick View</button>
+        </div>
+        ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+      </div>
+      <div class="product-card-info">
+        <div class="product-category">${p.category}</div>
+        <h3 class="product-name">${p.name}</h3>
+        <div class="product-price">₦${p.price.toLocaleString()}</div>
+      </div>
+    </article>
+  `).join('');
+  document.querySelectorAll('.product-card, .overlay-btn').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+}
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    loadProducts(currentFilter, currentSort);
+  });
+});
+
+document.getElementById('sortSelect')?.addEventListener('change', (e) => {
+  currentSort = e.target.value;
+  loadProducts(currentFilter, currentSort);
+});
+
+function filterProducts(cat) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === cat));
+  loadProducts(cat, currentSort);
+  document.getElementById('shop').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function openProductModal(productId) {
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return;
+  const overlay = document.getElementById('modalOverlay');
+  const inner = document.getElementById('modalInner');
+  inner.innerHTML = `
+    <div class="modal-image"><img src="${product.image}" alt="${product.name}" /></div>
+    <div class="modal-details">
+      <div class="modal-category">${product.category} Collection</div>
+      <h2 class="modal-name">${product.name}</h2>
+      <div class="modal-price">₦${product.price.toLocaleString()}</div>
+      <p class="modal-desc">${product.description}</p>
+      <label class="select-label">Select Size</label>
+      <div class="size-options">${product.sizes.map(s => `<button class="size-btn" onclick="toggleSelect(this, '.size-btn')">${s}</button>`).join('')}</div>
+      <label class="select-label">Select Color</label>
+      <div class="color-options">${product.colors.map(c => `<button class="color-btn" onclick="toggleSelect(this, '.color-btn')">${c}</button>`).join('')}</div>
+      <button class="btn-primary modal-add-btn" onclick="addToCartFromModal('${product.id}')">Add to Cart</button>
+    </div>
+  `;
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function toggleSelect(btn, selector) {
+  btn.closest('.modal-details').querySelectorAll(selector).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function addToCartFromModal(productId) {
+  const modal = document.getElementById('modalInner');
+  const sizeBtn = modal.querySelector('.size-btn.selected');
+  const colorBtn = modal.querySelector('.color-btn.selected');
+  if (!sizeBtn) { alert('Please select a size'); return; }
+  if (!colorBtn) { alert('Please select a color'); return; }
+  const product = allProducts.find(p => p.id === productId);
+  addToCart({ id: product.id, name: product.name, price: product.price, image: product.image, size: sizeBtn.textContent, color: colorBtn.textContent });
+  closeModal();
+  openCart();
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+
+function addToCart(item) {
+  const key = `${item.id}-${item.size}-${item.color}`;
+  const existing = cart.find(c => `${c.id}-${c.size}-${c.color}` === key);
+  if (existing) { existing.quantity += 1; } else { cart.push({ ...item, quantity: 1, key }); }
+  saveCart(); updateCartUI(); bumpCount();
+}
+
+function saveCart() { localStorage.setItem('stylus_cart', JSON.stringify(cart)); }
+
+function updateCartUI() {
+  const count = cart.reduce((sum, i) => sum + i.quantity, 0);
+  document.getElementById('cartCount').textContent = count;
+  renderCartItems();
+}
+
+function bumpCount() {
+  const el = document.getElementById('cartCount');
+  el.classList.add('bump');
+  setTimeout(() => el.classList.remove('bump'), 300);
+}
+
+function renderCartItems() {
+  const container = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+  if (!cart.length) {
+    container.innerHTML = `<div class="cart-empty"><p>Your cart is empty</p><button class="btn-primary" onclick="closeCart()">Continue Shopping</button></div>`;
+    footer.style.display = 'none'; return;
+  }
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${item.image}" alt="${item.name}" />
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-meta">${item.size} · ${item.color}</div>
+        <div class="cart-item-price">₦${(item.price * item.quantity).toLocaleString()}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty('${item.key}', -1)">−</button>
+          <span class="qty-val">${item.quantity}</span>
+          <button class="qty-btn" onclick="changeQty('${item.key}', 1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart('${item.key}')">✕</button>
+    </div>
+  `).join('');
+  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  document.getElementById('cartTotal').textContent = `₦${total.toLocaleString()}`;
+  footer.style.display = 'block';
+}
+
+function changeQty(key, delta) {
+  const item = cart.find(c => c.key === key);
+  if (!item) return;
+  item.quantity += delta;
+  if (item.quantity <= 0) removeFromCart(key);
+  else { saveCart(); updateCartUI(); }
+}
+
+function removeFromCart(key) { cart = cart.filter(c => c.key !== key); saveCart(); updateCartUI(); }
+
+function initCart() {
+  document.getElementById('cartToggle').addEventListener('click', openCart);
+  document.getElementById('cartClose').addEventListener('click', closeCart);
+  document.getElementById('cartOverlay').addEventListener('click', closeCart);
+  document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
+}
+
+function openCart() { document.getElementById('cartSidebar').classList.add('active'); document.getElementById('cartOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeCart() { document.getElementById('cartSidebar').classList.remove('active'); document.getElementById('cartOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+
+function initCheckout() {
+  document.getElementById('checkoutClose').addEventListener('click', closeCheckout);
+  document.getElementById('checkoutOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('checkoutOverlay')) closeCheckout(); });
+  document.getElementById('payNowBtn').addEventListener('click', initiatePayment);
+}
+
+function openCheckout() { closeCart(); renderCheckoutSummary(); document.getElementById('checkoutOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeCheckout() { document.getElementById('checkoutOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+
+function renderCheckoutSummary() {
+  const list = document.getElementById('checkoutItemsList');
+  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  list.innerHTML = cart.map(item => `
+    <div class="checkout-item">
+      <div><div class="checkout-item-name">${item.name}</div><div class="checkout-item-meta">${item.size} · ${item.color} · Qty: ${item.quantity}</div></div>
+      <div class="checkout-item-price">₦${(item.price * item.quantity).toLocaleString()}</div>
+    </div>
+  `).join('');
+  document.getElementById('checkoutSubtotal').textContent = `₦${total.toLocaleString()}`;
+  document.getElementById('checkoutTotal').textContent = `₦${total.toLocaleString()}`;
+}
+
+async function initiatePayment() {
+  const name = document.getElementById('cName').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const phone = document.getElementById('cPhone').value.trim();
+  const street = document.getElementById('cStreet').value.trim();
+  const city = document.getElementById('cCity').value.trim();
+  const state = document.getElementById('cState').value.trim();
+  const country = document.getElementById('cCountry').value.trim();
+  if (!name || !email || !phone || !street || !city || !state) { alert('Please fill in all required fields marked with *'); return; }
+  if (!/\S+@\S+\.\S+/.test(email)) { alert('Please enter a valid email address'); return; }
+  const btn = document.getElementById('payNowBtn');
+  const btnText = document.getElementById('payBtnText');
+  btn.disabled = true; btnText.textContent = 'Initializing...';
+  const orderData = {
+    customer: { name, email, phone },
+    items: cart.map(item => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity, size: item.size, color: item.color })),
+    address: { street, city, state, country }
+  };
+  try {
+    const res = await fetch('/api/payment/initialize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData) });
+    const data = await res.json();
+    if (data.success) {
+      sessionStorage.setItem('pending_order', JSON.stringify({ reference: data.reference, ...orderData, total: data.total }));
+      window.location.href = data.authorization_url;
+    } else {
+      alert('Payment initialization failed. Please try again.');
+      btn.disabled = false; btnText.textContent = 'Pay with Paystack';
+    }
+  } catch (e) {
+    alert('Something went wrong. Please try again.');
+    btn.disabled = false; btnText.textContent = 'Pay with Paystack';
+  }
+}
+
+async function handlePaystackReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const reference = params.get('reference') || params.get('trxref');
+  if (!reference) return;
+  window.history.replaceState({}, document.title, '/');
+  try {
+    const res = await fetch('/api/payment/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ reference }) });
+    const data = await res.json();
+    if (data.success) {
+      cart = []; saveCart(); updateCartUI(); sessionStorage.removeItem('pending_order');
+      document.getElementById('successMsg').textContent = `Order ${reference} confirmed! Thank you${data.order?.customer?.name ? ', ' + data.order.customer.name : ''}.`;
+      document.getElementById('successOverlay').classList.add('active');
+    }
+  } catch (e) { console.error('Verification error:', e); }
+}
+
+function closeSuccess() { document.getElementById('successOverlay').classList.remove('active'); }
+
+function setWhatsAppLinks() {
+  const num = config.whatsappNumber || '2348144548826';
+  const msg = encodeURIComponent('Hello STYLUS! I have a question about your clothing.');
+  const url = `https://wa.me/${num}?text=${msg}`;
+  document.getElementById('whatsappFloat').href = url;
+  const footerWa = document.getElementById('footerWhatsapp');
+  if (footerWa) footerWa.href = url;
+}
+
+handlePaystackReturn();
