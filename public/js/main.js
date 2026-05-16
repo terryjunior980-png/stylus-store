@@ -402,6 +402,10 @@ async function handlePaystackReturn() {
       cart = [];
       saveCart();
       updateCartUI();
+      // Save order to admin dashboard
+      const adminOrders = JSON.parse(localStorage.getItem('stylus_orders') || '[]');
+      adminOrders.push(data.order);
+      localStorage.setItem('stylus_orders', JSON.stringify(adminOrders));
       const customerName = data.order && data.order.customer ? ', ' + data.order.customer.name : '';
       document.getElementById('successMsg').textContent = 'Order ' + reference + ' confirmed! Thank you' + customerName + '.';
       document.getElementById('successOverlay').classList.add('active');
