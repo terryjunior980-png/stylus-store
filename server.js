@@ -97,9 +97,16 @@ app.post('/api/payment/verify', async (req, res) => {
       { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` } }
     );
     const data = response.data.data;
-    if (data.status === 'success') {
+   if (data.status === 'success') {
       const metadata = data.metadata;
-      const order = { reference, customer: metadata.customer, items: metadata.items, total: metadata.total, address: metadata.address };
+      const order = {
+        reference,
+        customer: metadata.customer,
+        items: metadata.items,
+        total: metadata.total,
+        address: metadata.address,
+        date: new Date().toISOString()
+      };
       await sendTelegramAlert(order);
       res.json({ success: true, order });
     } else {
