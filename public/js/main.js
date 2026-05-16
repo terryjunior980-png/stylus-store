@@ -67,7 +67,6 @@ function renderProducts(products) {
     </article>
   `).join('');
 
-  // Attach click events after rendering
   grid.querySelectorAll('.product-card').forEach(card => {
     card.addEventListener('click', function() {
       const btn = this.querySelector('.overlay-btn');
@@ -129,7 +128,6 @@ function openProductModal(productId) {
     </div>
   `;
 
-  // Size buttons
   inner.querySelectorAll('.size-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       inner.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
@@ -137,7 +135,6 @@ function openProductModal(productId) {
     });
   });
 
-  // Color buttons
   inner.querySelectorAll('.color-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       inner.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
@@ -145,7 +142,6 @@ function openProductModal(productId) {
     });
   });
 
-  // Add to cart button
   document.getElementById('addToCartBtn').addEventListener('click', function() {
     const sizeBtn = inner.querySelector('.size-btn.selected');
     const colorBtn = inner.querySelector('.color-btn.selected');
@@ -171,6 +167,7 @@ document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
+
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('active');
   document.body.style.overflow = '';
@@ -221,7 +218,7 @@ function renderCartItems() {
           <button class="qty-btn" onclick="changeQty('${item.key}', 1)">+</button>
         </div>
       </div>
-      <button class="cart-item-remove" onclick="removeFromCart('${item.key}')">&#10005;</button>
+      <button class="cart-item-remove" onclick="removeFromCart('${item.key}')" style="background:#ff4444;color:white;padding:0.3rem 0.7rem;font-size:0.65rem;letter-spacing:0.1em;border:none;cursor:pointer;align-self:flex-start;">REMOVE</button>
     </div>
   `).join('');
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -241,6 +238,14 @@ function removeFromCart(key) {
   cart = cart.filter(c => c.key !== key);
   saveCart();
   updateCartUI();
+}
+
+function clearCart() {
+  if (confirm('Are you sure you want to clear your cart?')) {
+    cart = [];
+    saveCart();
+    updateCartUI();
+  }
 }
 
 function initCart() {
