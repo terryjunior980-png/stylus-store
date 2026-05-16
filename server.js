@@ -19,7 +19,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "'unsafe-inline'", "https://js.paystack.co", "https://checkout.paystack.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.unsplash.com"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
       connectSrc: ["'self'", "https://api.paystack.co"],
       frameSrc: ["https://checkout.paystack.com"]
     }
