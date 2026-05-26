@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <url>
+    <loc>https://stylus-store.onrender.com/</loc>
+    <lastmod>2025-05-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/dndxgulwr/image/upload/v1778965080/5783152913105489653_v5ku1p.jpg</image:loc>
+      <image:title>STYLUS Oversized Tee Black</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/dndxgulwr/image/upload/v1778965164/5783152913105489652_zhfdpm.jpg</image:loc>
+      <image:title>STYLUS Oversized Tee Navy</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/dndxgulwr/image/upload/v1778965325/5783152913105489651_o0azjy.jpg</image:loc>
+      <image:title>STYLUS Oversized Tee Burgundy</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/dndxgulwr/image/upload/v1778965381/5783152913105489650_rnj7jp.jpg</image:loc>
+      <image:title>STYLUS Oversized Tee Brown</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/dndxgulwr/image/upload/v1778965419/5783152913105489649_xxywg8.jpg</image:loc>
+      <image:title>STYLUS Power Suit Set Burgundy</image:title>
+    </image:image>
+  </url>
+
+</urlset>
