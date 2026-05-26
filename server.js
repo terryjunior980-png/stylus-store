@@ -8,6 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const products = require('./products');
 const { sendTelegramAlert } = require('./telegram');
+const { sendOrderConfirmation } = require('./email');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -108,6 +109,7 @@ app.post('/api/payment/verify', async (req, res) => {
         date: new Date().toISOString()
       };
       await sendTelegramAlert(order);
+      await sendOrderConfirmation(order);
       res.json({ success: true, order });
     } else {
       res.json({ success: false, message: 'Payment not confirmed' });
