@@ -9,6 +9,7 @@ const path = require('path');
 const products = require('./products');
 const { sendTelegramAlert } = require('./telegram');
 const { sendOrderConfirmation } = require('./email');
+const { getChatbotResponse } = require('./chatbot');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -98,7 +99,7 @@ app.post('/api/payment/verify', async (req, res) => {
       { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` } }
     );
     const data = response.data.data;
-   if (data.status === 'success') {
+    if (data.status === 'success') {
       const metadata = data.metadata;
       const order = {
         reference,
@@ -108,7 +109,7 @@ app.post('/api/payment/verify', async (req, res) => {
         address: metadata.address,
         date: new Date().toISOString()
       };
-await sendTelegramAlert(order);
+      await sendTelegramAlert(order);
       await sendOrderConfirmation(order);
       res.json({ success: true, order });
     } else {
@@ -118,6 +119,15 @@ await sendTelegramAlert(order);
     console.error('Paystack verify error:', err.response?.data || err.message);
     res.status(500).json({ success: false, message: 'Verification failed' });
   }
+});
+
+app.post('/api/chat', async (req, res) => {
+  const { messages } = req.body;
+  if (!messages || !messages.length) {
+    return res.status(400).json({ success: false, message: 'Messages required' });
+  }
+  const reply = await getChatbotResponse(messages);
+  res.json({ success: true, reply });
 });
 
 app.get('/api/config', (req, res) => {
