@@ -108,7 +108,7 @@ app.post('/api/payment/verify', async (req, res) => {
         address: metadata.address,
         date: new Date().toISOString()
       };
-      await sendTelegramAlert(order);
+await sendTelegramAlert(order);
       await sendOrderConfirmation(order);
       res.json({ success: true, order });
     } else {
