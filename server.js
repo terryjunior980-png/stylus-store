@@ -14,16 +14,18 @@ const { getChatbotResponse } = require('./chatbot');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.set('trust proxy', 1);
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://js.paystack.co", "https://checkout.paystack.com"],
-scriptSrcAttr: ["'unsafe-inline'"],
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https://api.paystack.co"],
+      connectSrc: ["'self'", "https://api.paystack.co", "https://api.groq.com"],
       frameSrc: ["https://checkout.paystack.com"]
     }
   }
@@ -34,7 +36,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.set('trust proxy', 1);
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api/', limiter);
 
@@ -128,8 +129,13 @@ app.post('/api/chat', async (req, res) => {
   if (!messages || !messages.length) {
     return res.status(400).json({ success: false, message: 'Messages required' });
   }
-  const reply = await getChatbotResponse(messages);
-  res.json({ success: true, reply });
+  try {
+    const reply = await getChatbotResponse(messages);
+    res.json({ success: true, reply });
+  } catch (err) {
+    console.error('Chat route error:', err.message);
+    res.status(500).json({ success: false, reply: 'Contact us on WhatsApp: +2348144548826' });
+  }
 });
 
 app.get('/api/config', (req, res) => {
