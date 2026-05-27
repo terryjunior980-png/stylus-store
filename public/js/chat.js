@@ -1,5 +1,3 @@
-'use strict';
-
 let chatOpen = false;
 let chatHistory = [];
 
