@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>STYLUS — Premium Clothing | Oversized Tees, Suits & More</title>
   <meta name="description" content="Shop STYLUS premium clothing — oversized tees, power suits and elevated essentials. Worldwide shipping. Secure payment. Quality guaranteed." />
-  <meta name="keywords" content="STYLUS clothing, oversized tee Nigeria, premium fashion Nigeria, buy clothes online Nigeria, luxury streetwear Africa, oversized tshirt Lagos, Nigerian fashion brand, STYLUS tee, buy oversized tee, premium suits Nigeria" />
+  <meta name="keywords" content="STYLUS clothing, oversized tee Nigeria, premium fashion Nigeria, buy clothes online Nigeria, luxury streetwear Africa, oversized tshirt Lagos, Nigerian fashion brand" />
   <meta name="robots" content="index, follow" />
   <meta name="author" content="STYLUS" />
   <meta name="google-site-verification" content="qujN6YWA-cr_mQ4boUvgX9HuzKEd4Ok8frFMyTeCNyM" />
@@ -18,7 +18,7 @@
   <meta property="og:site_name" content="STYLUS" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="STYLUS — Premium Clothing" />
-  <meta name="twitter:description" content="Elevated essentials for the modern wardrobe. Shop oversized tees, power suits and more." />
+  <meta name="twitter:description" content="Elevated essentials for the modern wardrobe." />
   <meta name="twitter:image" content="https://res.cloudinary.com/dndxgulwr/image/upload/v1778965080/5783152913105489653_v5ku1p.jpg" />
   <script type="application/ld+json">
   {
@@ -27,26 +27,31 @@
     "name": "STYLUS",
     "description": "Premium clothing brand offering oversized tees, power suits and elevated essentials.",
     "url": "https://stylus-store.onrender.com",
-    "logo": "https://res.cloudinary.com/dndxgulwr/image/upload/v1778965080/5783152913105489653_v5ku1p.jpg",
     "telephone": "+2348144548826",
-    "address": {
-      "@type": "PostalAddress",
-      "addressCountry": "NG",
-      "addressLocality": "Lagos"
-    },
-    "sameAs": ["https://wa.me/2348144548826"],
-    "offers": {
-      "@type": "AggregateOffer",
-      "priceCurrency": "NGN",
-      "lowPrice": "20000",
-      "highPrice": "180000"
-    }
+    "address": { "@type": "PostalAddress", "addressCountry": "NG", "addressLocality": "Lagos" },
+    "offers": { "@type": "AggregateOffer", "priceCurrency": "NGN", "lowPrice": "20000", "highPrice": "180000" }
   }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Check auth immediately before page loads
+    (async function() {
+      var SUPABASE_URL = 'https://fwvqrtutkchlpjhujqbf.supabase.co';
+      var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3dnFydHV0a2NobHBqaHVqcWJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDA2NzUsImV4cCI6MjA5NTQ3NjY3NX0.2-l6oGPzpRhImO6715SET_C_d394e2oYcmBdx5o8_00';
+      var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      var result = await client.auth.getSession();
+      if (!result.data.session) {
+        window.location.href = '/login.html';
+      } else {
+        window.STYLUS_USER = result.data.session.user;
+        window.STYLUS_SUPABASE = client;
+      }
+    })();
+  </script>
 </head>
 <body>
   <div class="cursor" id="cursor"></div>
@@ -61,7 +66,7 @@
         <option value="USD">$ USD</option>
         <option value="GBP">£ GBP</option>
       </select>
-      <a href="/login.html" id="loginNavBtn" style="font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:#888;text-decoration:none;text-transform:uppercase">Login</a>
+      <a href="/login.html" id="loginNavBtn" style="font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;color:#888;text-decoration:none;text-transform:uppercase">Account</a>
       <button class="nav-cart-btn" id="cartToggle" aria-label="Open cart">
         <span>CART</span>
         <span class="cart-count" id="cartCount">0</span>
@@ -269,7 +274,6 @@
     </svg>
   </a>
 
-  <!-- CHATBOT BUTTON -->
   <div id="chatbotBtn" style="position:fixed;bottom:6rem;right:2rem;width:56px;height:56px;background:#000;border:1px solid #c9a84c;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:150;box-shadow:0 4px 20px rgba(201,168,76,0.3);animation:popIn 0.5s cubic-bezier(0.16,1,0.3,1) 1.5s both">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
   </div>
