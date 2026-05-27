@@ -1,10 +1,13 @@
 'use strict';
 
-let cart = JSON.parse(localStorage.getItem('stylus_cart') || '[]');
-let config = {};
-let allProducts = [];
-let currentFilter = 'All';
-let currentSort = '';
+var cart = JSON.parse(localStorage.getItem('stylus_cart') || '[]');
+var config = {};
+var allProducts = [];
+var currentFilter = 'All';
+var currentSort = '';
+var RATES = { NGN: 1, USD: 1550, GBP: 1950 };
+var SYMBOLS = { NGN: '₦', USD: '$', GBP: '£' };
+var currentCurrency = localStorage.getItem('stylus_currency') || 'NGN';
 
 document.addEventListener('DOMContentLoaded', async () => {
   initNav();
