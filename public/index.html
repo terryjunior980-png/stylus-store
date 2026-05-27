@@ -300,6 +300,54 @@
   let chatOpen = false;
   let chatHistory = [];
 
+  const STYLUS_KNOWLEDGE = {
+    greetings: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'yo', 'sup'],
+    sizing: ['size', 'sizing', 'fit', 'chest', 'measurements', 'small', 'medium', 'large', 'xl', 'xxl'],
+    delivery: ['delivery', 'shipping', 'ship', 'deliver', 'how long', 'when', 'days', 'arrive', 'abuja', 'lagos', 'ph', 'ibadan', 'kano', 'international', 'worldwide'],
+    payment: ['pay', 'payment', 'paystack', 'card', 'transfer', 'bank', 'ussd', 'how to pay'],
+    returns: ['return', 'refund', 'exchange', 'wrong', 'damaged', 'cancel'],
+    price: ['price', 'cost', 'how much', 'naira', 'dollar', 'cheap', 'expensive'],
+    products: ['tee', 'shirt', 'suit', 'cargo', 'what do you sell', 'products', 'collection', 'colors', 'colour', 'black', 'navy', 'brown', 'burgundy'],
+    whatsapp: ['whatsapp', 'contact', 'talk', 'speak', 'human', 'agent', 'help']
+  };
+
+  function getResponse(msg) {
+    const m = msg.toLowerCase();
+
+    if (STYLUS_KNOWLEDGE.greetings.some(w => m.includes(w))) {
+      return "Hey! 👋 Welcome to STYLUS. I'm here to help with sizing, delivery, payments and anything else. What would you like to know?";
+    }
+    if (STYLUS_KNOWLEDGE.sizing.some(w => m.includes(w))) {
+      return "Our sizing guide:\n• S — Chest 36-38\"\n• M — Chest 38-40\"\n• L — Chest 40-42\"\n• XL — Chest 42-44\"\n• XXL — Chest 44-46\"\n\nOur tees are oversized — size down for a regular fit. 🖤";
+    }
+    if (STYLUS_KNOWLEDGE.delivery.some(w => m.includes(w))) {
+      return "Delivery times:\n• Lagos: 1-2 business days\n• Other states: 3-5 business days\n• International: 7-14 business days\n\nFree delivery on orders above ₦50,000! 🚚";
+    }
+    if (STYLUS_KNOWLEDGE.payment.some(w => m.includes(w))) {
+      return "We accept all payments via Paystack — debit cards, bank transfer, and USSD. 100% secure. Just click 'Pay with Paystack' at checkout! 💳";
+    }
+    if (STYLUS_KNOWLEDGE.returns.some(w => m.includes(w))) {
+      return "We have a 14-day return policy from delivery date. Item must be unworn and in original condition. Contact us on WhatsApp to start your return: +2348144548826 📦";
+    }
+    if (STYLUS_KNOWLEDGE.price.some(w => m.includes(w))) {
+      return "Our prices:\n• Oversized Tees — ₦20,000\n• Power Suit Set — ₦180,000\n\nYou can also switch to USD or GBP using the currency selector at the top! 💰";
+    }
+    if (STYLUS_KNOWLEDGE.products.some(w => m.includes(w))) {
+      return "We currently have:\n• Oversized Tees in Black, Navy, Burgundy & Brown — ₦20,000\n• Power Suit Set in Burgundy — ₦180,000\n\nNew drops coming soon. 🖤";
+    }
+    if (STYLUS_KNOWLEDGE.whatsapp.some(w => m.includes(w))) {
+      return "You can reach us directly on WhatsApp: +2348144548826. We typically respond within a few hours! 💬";
+    }
+    if (m.includes('order') && (m.includes('status') || m.includes('track') || m.includes('where'))) {
+      return "To track your order, please contact us on WhatsApp with your order reference number (starts with STYLUS-). We'll update you immediately! 📦";
+    }
+    if (m.includes('thank')) {
+      return "You're welcome! 🖤 Happy shopping with STYLUS. Feel free to ask anything else!";
+    }
+
+    return "Great question! For the best answer, reach us on WhatsApp: +2348144548826 — or browse our collection above. 🖤";
+  }
+
   function toggleChat() {
     chatOpen = !chatOpen;
     const win = document.getElementById('chatbotWindow');
@@ -310,54 +358,33 @@
     }
   }
 
-  async function sendMessage() {
+  function sendMessage() {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
     if (!msg) return;
-
     input.value = '';
     appendMessage(msg, 'user');
-    chatHistory.push({ role: 'user', content: msg });
 
-    const typing = appendTyping();
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: chatHistory })
-      });
-      const data = await res.json();
-      typing.remove();
-      appendMessage(data.reply, 'bot');
-      chatHistory.push({ role: 'assistant', content: data.reply });
-    } catch (e) {
-      typing.remove();
-      appendMessage('Sorry, something went wrong. WhatsApp us: +2348144548826', 'bot');
-    }
+    setTimeout(() => {
+      const reply = getResponse(msg);
+      appendMessage(reply, 'bot');
+    }, 600);
   }
 
   function appendMessage(text, role) {
     const container = document.getElementById('chatMessages');
     const div = document.createElement('div');
     div.style.cssText = role === 'user'
-      ? 'background:#1a1a1a;border:1px solid #333;padding:0.75rem 1rem;font-size:0.8rem;color:#fff;line-height:1.6;max-width:85%;border-radius:8px 0 8px 8px;align-self:flex-end;margin-left:auto'
-      : 'background:#111;border:1px solid #222;padding:0.75rem 1rem;font-size:0.8rem;color:#ccc;line-height:1.6;max-width:85%;border-radius:0 8px 8px 8px';
+      ? 'background:#1a1a1a;border:1px solid #333;padding:0.75rem 1rem;font-size:0.8rem;color:#fff;line-height:1.6;max-width:85%;border-radius:8px 0 8px 8px;align-self:flex-end;margin-left:auto;white-space:pre-line'
+      : 'background:#111;border:1px solid #222;padding:0.75rem 1rem;font-size:0.8rem;color:#ccc;line-height:1.6;max-width:85%;border-radius:0 8px 8px 8px;white-space:pre-line';
     div.textContent = text;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
     return div;
   }
 
-  function appendTyping() {
-    const container = document.getElementById('chatMessages');
-    const div = document.createElement('div');
-    div.style.cssText = 'background:#111;border:1px solid #222;padding:0.75rem 1rem;font-size:0.8rem;color:#555;line-height:1.6;max-width:85%;border-radius:0 8px 8px 8px';
-    div.textContent = 'Typing...';
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-    return div;
-  }
+  document.getElementById('chatInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
 </script>
 </body>
-</html>
