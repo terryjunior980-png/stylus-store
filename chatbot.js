@@ -1,71 +1,61 @@
 const axios = require('axios');
 
-const SYSTEM_PROMPT = `You are STYLUS Assistant, the official AI for STYLUS premium clothing brand based in Nigeria. You are elegant, helpful and knowledgeable about the brand.
+const SYSTEM_PROMPT = `You are STYLUS Assistant, the official AI for STYLUS premium clothing brand based in Nigeria. You are elegant, cool and helpful.
 
 ABOUT STYLUS:
-- Premium Nigerian clothing brand selling oversized tees and power suits
+- Premium Nigerian clothing brand
 - Products: Oversized Tees (Black, Navy, Burgundy, Brown) at 20,000 Naira each, Power Suit Set at 180,000 Naira
-- Sizes available: S, M, L, XL, XXL
+- Sizes: S, M, L, XL, XXL
 - Payment: Paystack (cards, bank transfer, USSD)
 - WhatsApp: +2348144548826
-- Worldwide shipping available
+- Worldwide shipping
 - 14-day returns policy
 
-SIZING GUIDE:
+SIZING:
 - S: Chest 36-38 inches
 - M: Chest 38-40 inches
 - L: Chest 40-42 inches
 - XL: Chest 42-44 inches
 - XXL: Chest 44-46 inches
+- Tees are oversized, size down for regular fit
 
 DELIVERY:
 - Lagos: 1-2 business days
-- Other Nigerian states: 3-5 business days
+- Other states: 3-5 business days
 - International: 7-14 business days
 - Free delivery on orders above 50,000 Naira
 
 RETURNS:
-- 14 days from delivery
-- Item must be unworn and in original condition
-- Contact via WhatsApp to initiate return
+- 14 days from delivery, unworn, original condition
+- Contact WhatsApp to initiate
 
-RULES:
-- Keep responses short and elegant, max 3 sentences
-- Always be helpful and on-brand
-- If you cannot help, direct them to WhatsApp: +2348144548826
-- Never make up prices or policies not listed above`;
+Keep responses short, max 3 sentences. Be helpful and on-brand. If unsure, direct to WhatsApp: +2348144548826`;
 
 async function getChatbotResponse(messages) {
   try {
-    console.log('Calling Anthropic API...');
-    console.log('API Key exists:', !!process.env.ANTHROPIC_API_KEY);
-    console.log('API Key prefix:', process.env.ANTHROPIC_API_KEY?.substring(0, 20));
-
+    console.log('Calling Groq API...');
     const response = await axios.post(
-      'https://api.anthropic.com/v1/messages',
+      'https://api.groq.com/openai/v1/chat/completions',
       {
-        model: 'claude-3-5-haiku-20241022',
+        model: 'llama3-8b-8192',
         max_tokens: 300,
-        system: SYSTEM_PROMPT,
-        messages: messages
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...messages
+        ]
       },
       {
         headers: {
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json'
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
         }
       }
     );
-
-    console.log('Anthropic response:', JSON.stringify(response.data));
-    return response.data.content[0].text;
-
+    console.log('Groq response OK');
+    return response.data.choices[0].message.content;
   } catch (err) {
-    console.error('Chatbot full error:', JSON.stringify(err.response?.data));
-    console.error('Chatbot error message:', err.message);
-    console.error('Chatbot status:', err.response?.status);
-    return 'I am having trouble right now. Please contact us on WhatsApp: +2348144548826';
+    console.error('Groq error:', err.response?.data || err.message);
+    return "I'm having trouble right now. Please contact us on WhatsApp: +2348144548826";
   }
 }
 
