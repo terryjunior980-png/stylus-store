@@ -272,119 +272,31 @@
 
 <script src="/js/main.js"></script>
 
-<!-- CHATBOT -->
-<div id="chatbotBtn" onclick="toggleChat()" style="position:fixed;bottom:6rem;right:2rem;width:56px;height:56px;background:#000;border:1px solid #c9a84c;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:150;box-shadow:0 4px 20px rgba(201,168,76,0.3);animation:popIn 0.5s cubic-bezier(0.16,1,0.3,1) 1.5s both">
+<!-- CHATBOT BUTTON -->
+<div id="chatbotBtn" style="position:fixed;bottom:6rem;right:2rem;width:56px;height:56px;background:#000;border:1px solid #c9a84c;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:150;box-shadow:0 4px 20px rgba(201,168,76,0.3);animation:popIn 0.5s cubic-bezier(0.16,1,0.3,1) 1.5s both">
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
 </div>
 
-<div id="chatbotWindow" style="display:none;position:fixed;bottom:10rem;right:2rem;width:340px;max-height:500px;background:#0a0a0a;border:1px solid #222;z-index:151;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
+<!-- CHATBOT WINDOW -->
+<div id="chatbotWindow" style="display:none;position:fixed;bottom:10rem;right:2rem;width:340px;background:#0a0a0a;border:1px solid #222;z-index:151;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.8)">
   <div style="padding:1rem 1.25rem;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between;background:#111">
     <div>
       <div style="font-family:'Space Mono',monospace;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;color:#c9a84c">STYLUS AI</div>
       <div style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;color:#555;margin-top:2px">● Online 24/7</div>
     </div>
-    <button onclick="toggleChat()" style="background:none;border:none;color:#555;font-size:1rem;cursor:pointer">✕</button>
+    <button id="chatCloseBtn" style="background:none;border:none;color:#555;font-size:1rem;cursor:pointer">✕</button>
   </div>
-  <div id="chatMessages" style="flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;max-height:320px;scrollbar-width:thin;scrollbar-color:#222 transparent">
+  <div id="chatMessages" style="overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;max-height:320px;scrollbar-width:thin;scrollbar-color:#222 transparent">
     <div style="background:#111;border:1px solid #222;padding:0.75rem 1rem;font-size:0.8rem;color:#ccc;line-height:1.6;max-width:85%;border-radius:0 8px 8px 8px">
-      Hey! 👋 I'm the STYLUS AI. Ask me anything — sizing, delivery, products, or just say hi!
+      Hey! 👋 I'm the STYLUS AI. Ask me anything — sizing, delivery, products, or payments!
     </div>
   </div>
   <div style="padding:0.75rem;border-top:1px solid #222;display:flex;gap:0.5rem">
-    <input id="chatInput" type="text" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')sendMessage()" style="flex:1;background:#111;border:1px solid #333;color:#fff;padding:0.6rem 0.8rem;font-family:'Space Mono',monospace;font-size:0.7rem;outline:none" />
-    <button onclick="sendMessage()" style="background:#c9a84c;color:#000;border:none;padding:0.6rem 0.9rem;font-family:'Space Mono',monospace;font-size:0.7rem;font-weight:700;cursor:pointer">→</button>
+    <input id="chatInput" type="text" placeholder="Ask anything..." style="flex:1;background:#111;border:1px solid #333;color:#fff;padding:0.6rem 0.8rem;font-family:'Space Mono',monospace;font-size:0.7rem;outline:none" />
+    <button id="chatSendBtn" style="background:#c9a84c;color:#000;border:none;padding:0.6rem 0.9rem;font-family:'Space Mono',monospace;font-size:0.7rem;font-weight:700;cursor:pointer">→</button>
   </div>
 </div>
 
-<script>
-  let chatOpen = false;
-  let chatHistory = [];
-
-  const STYLUS_KNOWLEDGE = {
-    greetings: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 'yo', 'sup'],
-    sizing: ['size', 'sizing', 'fit', 'chest', 'measurements', 'small', 'medium', 'large', 'xl', 'xxl'],
-    delivery: ['delivery', 'shipping', 'ship', 'deliver', 'how long', 'when', 'days', 'arrive', 'abuja', 'lagos', 'ph', 'ibadan', 'kano', 'international', 'worldwide'],
-    payment: ['pay', 'payment', 'paystack', 'card', 'transfer', 'bank', 'ussd', 'how to pay'],
-    returns: ['return', 'refund', 'exchange', 'wrong', 'damaged', 'cancel'],
-    price: ['price', 'cost', 'how much', 'naira', 'dollar', 'cheap', 'expensive'],
-    products: ['tee', 'shirt', 'suit', 'cargo', 'what do you sell', 'products', 'collection', 'colors', 'colour', 'black', 'navy', 'brown', 'burgundy'],
-    whatsapp: ['whatsapp', 'contact', 'talk', 'speak', 'human', 'agent', 'help']
-  };
-
-  function getResponse(msg) {
-    const m = msg.toLowerCase();
-
-    if (STYLUS_KNOWLEDGE.greetings.some(w => m.includes(w))) {
-      return "Hey! 👋 Welcome to STYLUS. I'm here to help with sizing, delivery, payments and anything else. What would you like to know?";
-    }
-    if (STYLUS_KNOWLEDGE.sizing.some(w => m.includes(w))) {
-      return "Our sizing guide:\n• S — Chest 36-38\"\n• M — Chest 38-40\"\n• L — Chest 40-42\"\n• XL — Chest 42-44\"\n• XXL — Chest 44-46\"\n\nOur tees are oversized — size down for a regular fit. 🖤";
-    }
-    if (STYLUS_KNOWLEDGE.delivery.some(w => m.includes(w))) {
-      return "Delivery times:\n• Lagos: 1-2 business days\n• Other states: 3-5 business days\n• International: 7-14 business days\n\nFree delivery on orders above ₦50,000! 🚚";
-    }
-    if (STYLUS_KNOWLEDGE.payment.some(w => m.includes(w))) {
-      return "We accept all payments via Paystack — debit cards, bank transfer, and USSD. 100% secure. Just click 'Pay with Paystack' at checkout! 💳";
-    }
-    if (STYLUS_KNOWLEDGE.returns.some(w => m.includes(w))) {
-      return "We have a 14-day return policy from delivery date. Item must be unworn and in original condition. Contact us on WhatsApp to start your return: +2348144548826 📦";
-    }
-    if (STYLUS_KNOWLEDGE.price.some(w => m.includes(w))) {
-      return "Our prices:\n• Oversized Tees — ₦20,000\n• Power Suit Set — ₦180,000\n\nYou can also switch to USD or GBP using the currency selector at the top! 💰";
-    }
-    if (STYLUS_KNOWLEDGE.products.some(w => m.includes(w))) {
-      return "We currently have:\n• Oversized Tees in Black, Navy, Burgundy & Brown — ₦20,000\n• Power Suit Set in Burgundy — ₦180,000\n\nNew drops coming soon. 🖤";
-    }
-    if (STYLUS_KNOWLEDGE.whatsapp.some(w => m.includes(w))) {
-      return "You can reach us directly on WhatsApp: +2348144548826. We typically respond within a few hours! 💬";
-    }
-    if (m.includes('order') && (m.includes('status') || m.includes('track') || m.includes('where'))) {
-      return "To track your order, please contact us on WhatsApp with your order reference number (starts with STYLUS-). We'll update you immediately! 📦";
-    }
-    if (m.includes('thank')) {
-      return "You're welcome! 🖤 Happy shopping with STYLUS. Feel free to ask anything else!";
-    }
-
-    return "Great question! For the best answer, reach us on WhatsApp: +2348144548826 — or browse our collection above. 🖤";
-  }
-
-  function toggleChat() {
-    chatOpen = !chatOpen;
-    const win = document.getElementById('chatbotWindow');
-    win.style.display = chatOpen ? 'flex' : 'none';
-    if (chatOpen) {
-      win.style.flexDirection = 'column';
-      document.getElementById('chatInput').focus();
-    }
-  }
-
-  function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-    input.value = '';
-    appendMessage(msg, 'user');
-
-    setTimeout(() => {
-      const reply = getResponse(msg);
-      appendMessage(reply, 'bot');
-    }, 600);
-  }
-
-  function appendMessage(text, role) {
-    const container = document.getElementById('chatMessages');
-    const div = document.createElement('div');
-    div.style.cssText = role === 'user'
-      ? 'background:#1a1a1a;border:1px solid #333;padding:0.75rem 1rem;font-size:0.8rem;color:#fff;line-height:1.6;max-width:85%;border-radius:8px 0 8px 8px;align-self:flex-end;margin-left:auto;white-space:pre-line'
-      : 'background:#111;border:1px solid #222;padding:0.75rem 1rem;font-size:0.8rem;color:#ccc;line-height:1.6;max-width:85%;border-radius:0 8px 8px 8px;white-space:pre-line';
-    div.textContent = text;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-    return div;
-  }
-
-  document.getElementById('chatInput').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') sendMessage();
-  });
-</script>
+<script src="/js/main.js"></script>
+<script src="/js/chat.js"></script>
 </body>
