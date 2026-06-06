@@ -20,13 +20,14 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://js.paystack.co", "https://checkout.paystack.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://js.paystack.co", "https://checkout.paystack.com", "https://cdn.jsdelivr.net"],
       scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https://api.paystack.co", "https://api.groq.com"],
-      frameSrc: ["https://checkout.paystack.com"]
+      connectSrc: ["'self'", "https://api.paystack.co", "https://api.groq.com", "https://*.supabase.co", "https://accounts.google.com"],
+      frameSrc: ["https://checkout.paystack.com", "https://accounts.google.com"],
+      formAction: ["'self'", "https://accounts.google.com"]
     }
   }
 }));
