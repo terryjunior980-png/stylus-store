@@ -36,13 +36,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
-
-  <!-- Load Supabase FIRST before anything else -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin></script>
 </head>
-<body style="display:none">
-
-  <!-- Page is hidden until auth check completes -->
+<body>
 
   <div class="cursor" id="cursor"></div>
   <div class="cursor-follower" id="cursorFollower"></div>
@@ -288,27 +284,29 @@
   </div>
 
   <script>
-    // AUTH CHECK — runs immediately when page loads
-    var _supa = window.supabase.createClient(
-      'https://fwvqrtutkchlpjhujqbf.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3dnFydHV0a2NobHBqaHVqcWJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDA2NzUsImV4cCI6MjA5NTQ3NjY3NX0.2-l6oGPzpRhImO6715SET_C_d394e2oYcmBdx5o8_00'
-    );
-
-    _supa.auth.getSession().then(function(result) {
-      if (!result.data.session) {
-        window.location.href = '/login.html';
-      } else {
-        window.STYLUS_USER = result.data.session.user;
-        window.STYLUS_SUPABASE = _supa;
-        // Show page now that auth is confirmed
-        document.body.style.display = 'block';
-        // Update account button with user name
-        var user = result.data.session.user;
-        var name = user.user_metadata && user.user_metadata.full_name
-          ? user.user_metadata.full_name.split(' ')[0]
-          : user.email.split('@')[0];
-        var btn = document.getElementById('loginNavBtn');
-        if (btn) btn.textContent = 'Hi, ' + name;
+    // AUTH CHECK
+    window.addEventListener('load', function() {
+      try {
+        var client = window.supabase.createClient(
+          'https://fwvqrtutkchlpjhujqbf.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3dnFydHV0a2NobHBqaHVqcWJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MDA2NzUsImV4cCI6MjA5NTQ3NjY3NX0.2-l6oGPzpRhImO6715SET_C_d394e2oYcmBdx5o8_00'
+        );
+        window.STYLUS_SUPABASE = client;
+        client.auth.getSession().then(function(result) {
+          if (!result.data.session) {
+            window.location.href = '/login.html';
+          } else {
+            window.STYLUS_USER = result.data.session.user;
+            var user = result.data.session.user;
+            var name = user.user_metadata && user.user_metadata.full_name
+              ? user.user_metadata.full_name.split(' ')[0]
+              : user.email.split('@')[0];
+            var btn = document.getElementById('loginNavBtn');
+            if (btn) btn.textContent = 'Hi, ' + name;
+          }
+        });
+      } catch(e) {
+        console.error('Auth error:', e);
       }
     });
   </script>
